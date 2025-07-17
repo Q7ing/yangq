@@ -23,8 +23,8 @@
 
             if (reasonBase64) {
                 try {
-                    // 【关键修正】使用与index.html完全匹配的解码方法
-                    const decodedReason = decodeURIComponent(atob(reasonBase64));
+                    // 【最终修正】使用与您URL格式完全匹配的解码方法
+                    const decodedReason = decodeURIComponent(escape(window.atob(reasonBase64)));
                     reasonElement.textContent = decodedReason;
                 } catch (e) {
                     console.error("Base64解码失败:", e);
