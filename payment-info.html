@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>确认收款账户</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* 为新增的提示文字增加一点样式 */
+        .helper-text {
+            font-size: 13px;
+            color: #888;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -18,23 +27,46 @@
              <input type="text" id="name" placeholder="请输入持卡人姓名" required>
              <label for="card-number">银行卡号</label>
              <input type="tel" id="card-number" placeholder="请输入您的银行卡号" required>
-             <label for="loan-amount">申请金额</label>
-             <input type="text" id="loan-amount" readonly>
-            <button type="submit" style="margin-top: 25px;">确认信息并提交</button>
+             <label for="loan-amount">申请金额 (元)</label>
+             <input type="number" id="loan-amount" placeholder="请输入您想申请的金额" required>
+             <p id="amount-helper" class="helper-text"></p>
+
+            <button type="submit" style="margin-top: 15px;">确认信息并提交</button>
         </form>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const amount = urlParams.get('amount');
+            const maxAmountStr = urlParams.get('amount');
+            const maxAmount = parseInt(maxAmountStr) || 50000; // 如果URL没有额度，默认为50000
+
             const loanAmountInput = document.getElementById('loan-amount');
-            if (amount) {
-                loanAmountInput.value = `¥ ${parseInt(amount).toLocaleString()}`;
-            } else {
-                loanAmountInput.value = "¥ 50,000";
-            }
+            const amountHelper = document.getElementById('amount-helper');
+
+            // 设置输入框的最大值和默认值
+            loanAmountInput.max = maxAmount;
+            loanAmountInput.value = maxAmount; // 默认填入最高额度，但用户可以修改
+            
+            // 更新提示文字
+            amountHelper.textContent = `最高可申请额度为 ${maxAmount.toLocaleString()} 元`;
+
             document.getElementById('payment-form').addEventListener('submit', function(event) {
-                event.preventDefault();
+                event.preventDefault(); // 阻止表单默认提交
+
+                // 【修改#3】增加提交验证逻辑
+                const requestedAmount = parseInt(loanAmountInput.value);
+
+                if (isNaN(requestedAmount) || requestedAmount <= 0) {
+                    alert('请输入有效的申请金额！');
+                    return; // 中断提交
+                }
+
+                if (requestedAmount > maxAmount) {
+                    alert(`申请金额不能超过您的最高可申请额度（${maxAmount.toLocaleString()}元）！`);
+                    return; // 中断提交
+                }
+
+                // 验证通过，跳转到下一步
                 window.location.href = 'final-processing.html' + window.location.search;
             });
         });
