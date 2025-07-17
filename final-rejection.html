@@ -18,10 +18,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const reason = urlParams.get('reason');
+            const reasonBase64 = urlParams.get('reason_b64');
             const reasonElement = document.getElementById('rejection-reason');
-            if (reason) {
-                reasonElement.textContent = decodeURIComponent(reason);
+
+            if (reasonBase64) {
+                try {
+                    const decodedReason = decodeURIComponent(atob(reasonBase64));
+                    reasonElement.textContent = decodedReason;
+                } catch (e) {
+                    console.error("Base64解码失败:", e);
+                    reasonElement.textContent = '无法加载失败原因。';
+                }
             } else {
                 reasonElement.textContent = '该账户存在异常风险，请联系客户经理。';
             }
