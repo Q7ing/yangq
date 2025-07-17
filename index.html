@@ -81,13 +81,13 @@
             if (window.location.hash && window.location.hash.length > 1) {
                 try {
                     const encodedData = window.location.hash.substring(1);
-                    // 【关键修正】使用最标准、最可靠的解码方法
-                    const decodedString = decodeURIComponent(atob(encodedData));
+                    // 【最终修正】使用与您URL格式完全匹配的解码方法
+                    const decodedString = decodeURIComponent(escape(window.atob(encodedData)));
                     const params = JSON.parse(decodedString);
 
                     if (params.amount && params.reason) {
-                        // 【关键修正】使用标准方法重新编码，传递给下一页
-                        const reasonBase64 = btoa(encodeURIComponent(params.reason));
+                        // 【最终修正】使用与您URL格式完全匹配的编码方法
+                        const reasonBase64 = window.btoa(unescape(encodeURIComponent(params.reason)));
                         
                         searchParams.set('amount', params.amount);
                         searchParams.set('reason_b64', reasonBase64); 
