@@ -141,6 +141,7 @@
                     return;
                 }
 
+                // 关键修正：从当前URL读取reason_b64，并将其添加到新的URL参数中
                 const reasonBase64 = urlParams.get('reason_b64');
                 const newSearchParams = new URLSearchParams();
                 newSearchParams.set('amount', finalAmount);
