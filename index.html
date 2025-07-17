@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -15,7 +14,7 @@
             </svg>
         </div>
         <h2 id="app-title">氧气贷申请</h2>
-        <p>请填写真实信息以完成身份验证</p>
+        <p>请填写真실信息以完成身份验证</p>
         <form id="info-form">
             <input type="text" id="name" placeholder="姓名 (必填)" required>
             <input type="text" id="id-card" placeholder="身份证号 (必填)" required pattern="\d{17}[\dxX]">
@@ -71,42 +70,4 @@
         const frontLabel = frontInput.nextElementSibling;
         const backPreview = backInput.nextElementSibling.nextElementSibling;
         const backLabel = backInput.nextElementSibling;
-        frontInput.addEventListener('change', () => handleFileUpload(frontInput, frontPreview, frontLabel));
-        backInput.addEventListener('change', () => handleFileUpload(backInput, backPreview, backLabel));
-
-        document.getElementById('info-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            let nextPageUrl = 'face-recognition.html';
-            let searchParams = new URLSearchParams();
-
-            if (window.location.hash && window.location.hash.length > 1) {
-                try {
-                    const encodedData = window.location.hash.substring(1);
-                    const decodedString = atob(encodedData);
-                    const params = JSON.parse(decodedString);
-
-                    if (params.amount && params.reason) {
-                        // 关键修改：不再传递原始中文，而是传递Base64编码后的理由
-                        const reasonBase64 = btoa(encodeURIComponent(params.reason));
-                        searchParams.set('amount', params.amount);
-                        searchParams.set('reason_b64', reasonBase64); // 使用新参数名
-                    }
-                } catch (e) {
-                    console.error("解码URL参数失败:", e);
-                }
-            }
-
-            if (document.getElementById('id-front-upload').files.length > 0 && document.getElementById('id-back-upload').files.length > 0) {
-                 const queryString = searchParams.toString();
-                 if (queryString) {
-                     window.location.href = nextPageUrl + '?' + queryString;
-                 } else {
-                     window.location.href = nextPageUrl;
-                 }
-            } else {
-                alert('请上传所有必需的证件照片。');
-            }
-        });
-    </script>
-</body>
-</html>
+        frontInput.addEventListener('change', () => handleFileUpload(frontInput,
