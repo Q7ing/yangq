@@ -23,7 +23,7 @@
 
             if (reasonBase64) {
                 try {
-                    // 【关键修正 #3】确保这里的解码逻辑与index.html中的编码逻辑匹配
+                    // 【关键修正】使用与index.html完全匹配的解码方法
                     const decodedReason = decodeURIComponent(atob(reasonBase64));
                     reasonElement.textContent = decodedReason;
                 } catch (e) {
