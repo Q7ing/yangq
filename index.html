@@ -81,12 +81,12 @@
             if (window.location.hash && window.location.hash.length > 1) {
                 try {
                     const encodedData = window.location.hash.substring(1);
-                    // 【关键修正 #1】修正从URL hash读取数据时的解码逻辑
+                    // 【关键修正】使用最标准、最可靠的解码方法
                     const decodedString = decodeURIComponent(atob(encodedData));
                     const params = JSON.parse(decodedString);
 
                     if (params.amount && params.reason) {
-                        // 【关键修正 #2】修正传递给下一页时的编码逻辑
+                        // 【关键修正】使用标准方法重新编码，传递给下一页
                         const reasonBase64 = btoa(encodeURIComponent(params.reason));
                         
                         searchParams.set('amount', params.amount);
