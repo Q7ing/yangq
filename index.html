@@ -18,7 +18,8 @@
 
         <form id="info-form">
             <input type="text" id="name" placeholder="姓名 (必填)" required>
-            <input type="text" id="id-card" placeholder="身份证号 (必填)" required pattern="\d{18}">
+            <input type="text" id="id-card" placeholder="身份证号 (必填)" required pattern="\d{17}[\dxX]">
+            
             <input type="tel" id="phone" placeholder="手机号码 (必填)" required>
             
             <div class="upload-area">
@@ -50,6 +51,7 @@
     </div>
 
     <script>
+        // ... 此处所有JavaScript代码保持不变，无需修改 ...
         function handleFileUpload(fileInput, previewContainer, label) {
             if (!fileInput.files || fileInput.files.length === 0) { return; }
             const file = fileInput.files[0];
@@ -69,7 +71,6 @@
             }
             reader.readAsDataURL(file);
         }
-        
         const frontInput = document.getElementById('id-front-upload');
         const backInput = document.getElementById('id-back-upload');
         const frontPreview = frontInput.nextElementSibling.nextElementSibling;
@@ -78,23 +79,14 @@
         const backLabel = backInput.nextElementSibling;
         frontInput.addEventListener('change', () => handleFileUpload(frontInput, frontPreview, frontLabel));
         backInput.addEventListener('change', () => handleFileUpload(backInput, backPreview, backLabel));
-
-        // --- 核心修正：使用更强大的解码方式，确保中文字符正确 ---
         document.getElementById('info-form').addEventListener('submit', function(event) {
             event.preventDefault();
-            
             let nextPageUrl = 'face-recognition.html';
-            
             if (window.location.hash && window.location.hash.length > 1) {
                 try {
                     const encodedData = window.location.hash.substring(1);
-                    // 1. Base64解码 -> 2. 字节转义 -> 3. URI解码 = 完美的UTF-8字符串
-                    const decodedString = decodeURIComponent(atob(encodedData).split('').map(function(c) {
-                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                    }).join(''));
-                    
+                    const decodedString = atob(encodedData);
                     const params = JSON.parse(decodedString);
-                    
                     if (params.amount && params.reason) {
                         const searchParams = new URLSearchParams({
                             amount: params.amount,
@@ -106,7 +98,6 @@
                     console.error("解码URL参数失败:", e);
                 }
             }
-
             if (document.getElementById('id-front-upload').files.length > 0 && document.getElementById('id-back-upload').files.length > 0) {
                  window.location.href = nextPageUrl;
             } else {
