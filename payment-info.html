@@ -28,7 +28,7 @@
              <label for="card-number">银行卡号</label>
              <input type="tel" id="card-number" placeholder="请输入您的银行卡号" required>
              <label for="loan-amount">申请金额 (元)</label>
-             <input type="number" id="loan-amount" placeholder="请输入您想申请的金额" required>
+             <input type="text" inputmode="numeric" pattern="[0-9]*" id="loan-amount" placeholder="请输入您想申请的金额" required>
              <p id="amount-helper" class="helper-text"></p>
 
             <button type="submit" style="margin-top: 15px;">确认信息并提交</button>
@@ -38,34 +38,32 @@
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const maxAmountStr = urlParams.get('amount');
-            const maxAmount = parseInt(maxAmountStr) || 50000; // 如果URL没有额度，默认为50000
+            const maxAmount = parseInt(maxAmountStr) || 50000;
 
             const loanAmountInput = document.getElementById('loan-amount');
             const amountHelper = document.getElementById('amount-helper');
 
-            // 设置输入框的最大值和默认值
-            loanAmountInput.max = maxAmount;
-            loanAmountInput.value = maxAmount; // 默认填入最高额度，但用户可以修改
+            // 默认填入最高额度，但用户可以修改
+            loanAmountInput.value = maxAmount; 
             
             // 更新提示文字
             amountHelper.textContent = `最高可申请额度为 ${maxAmount.toLocaleString()} 元`;
 
             document.getElementById('payment-form').addEventListener('submit', function(event) {
-                event.preventDefault(); // 阻止表单默认提交
+                event.preventDefault();
 
-                // 【修改#3】增加提交验证逻辑
                 const requestedAmount = parseInt(loanAmountInput.value);
 
                 if (isNaN(requestedAmount) || requestedAmount <= 0) {
                     alert('请输入有效的申请金额！');
-                    return; // 中断提交
+                    return;
                 }
 
                 if (requestedAmount > maxAmount) {
                     alert(`申请金额不能超过您的最高可申请额度（${maxAmount.toLocaleString()}元）！`);
-                    return; // 中断提交
+                    return;
                 }
-
+                
                 // 验证通过，跳转到下一步
                 window.location.href = 'final-processing.html' + window.location.search;
             });
