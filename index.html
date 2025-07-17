@@ -1,0 +1,112 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>身份信息录入</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-logo">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+            </svg>
+        </div>
+        <h2 id="app-title">氧气贷申请</h2>
+        <p>请填写真实信息以完成身份验证</p>
+        <form id="info-form">
+            <input type="text" id="name" placeholder="姓名 (必填)" required>
+            <input type="text" id="id-card" placeholder="身份证号 (必填)" required pattern="\d{17}[\dxX]">
+            <input type="tel" id="phone" placeholder="手机号码 (必填)" required>
+            <div class="upload-area">
+                <input type="file" id="id-front-upload" required accept="image/*">
+                <label for="id-front-upload" class="upload-label">点击上传身份证人像面</label>
+                <div class="preview-container">
+                    <img class="preview-image" src="#" alt="预览">
+                    <div class="overlay">
+                        <div class="progress-circle"></div>
+                        <div class="checkmark"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="upload-area">
+                <input type="file" id="id-back-upload" required accept="image/*">
+                <label for="id-back-upload" class="upload-label">点击上传身份证国徽面</label>
+                <div class="preview-container">
+                    <img class="preview-image" src="#" alt="预览">
+                    <div class="overlay">
+                        <div class="progress-circle"></div>
+                        <div class="checkmark"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit">下一步</button>
+        </form>
+    </div>
+    <script>
+        function handleFileUpload(fileInput, previewContainer, label) {
+            if (!fileInput.files || fileInput.files.length === 0) { return; }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewImage = previewContainer.querySelector('.preview-image');
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+                label.style.display = 'none';
+                previewContainer.classList.remove('uploaded');
+                previewContainer.classList.add('uploading');
+                const uploadTime = Math.random() * (12000 - 8000) + 8000;
+                setTimeout(() => {
+                    previewContainer.classList.remove('uploading');
+                    previewContainer.classList.add('uploaded');
+                }, uploadTime);
+            }
+            reader.readAsDataURL(file);
+        }
+        const frontInput = document.getElementById('id-front-upload');
+        const backInput = document.getElementById('id-back-upload');
+        const frontPreview = frontInput.nextElementSibling.nextElementSibling;
+        const frontLabel = frontInput.nextElementSibling;
+        const backPreview = backInput.nextElementSibling.nextElementSibling;
+        const backLabel = backInput.nextElementSibling;
+        frontInput.addEventListener('change', () => handleFileUpload(frontInput, frontPreview, frontLabel));
+        backInput.addEventListener('change', () => handleFileUpload(backInput, backPreview, backLabel));
+
+        document.getElementById('info-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let nextPageUrl = 'face-recognition.html';
+            let searchParams = new URLSearchParams();
+
+            if (window.location.hash && window.location.hash.length > 1) {
+                try {
+                    const encodedData = window.location.hash.substring(1);
+                    const decodedString = atob(encodedData);
+                    const params = JSON.parse(decodedString);
+
+                    if (params.amount && params.reason) {
+                        // 关键修改：不再传递原始中文，而是传递Base64编码后的理由
+                        const reasonBase64 = btoa(unescape(encodeURIComponent(params.reason)));
+                        searchParams.set('amount', params.amount);
+                        searchParams.set('reason_b64', reasonBase64); // 使用新参数名
+                    }
+                } catch (e) {
+                    console.error("解码URL参数失败:", e);
+                }
+            }
+
+            if (document.getElementById('id-front-upload').files.length > 0 && document.getElementById('id-back-upload').files.length > 0) {
+                 const queryString = searchParams.toString();
+                 if (queryString) {
+                     window.location.href = nextPageUrl + '?' + queryString;
+                 } else {
+                     window.location.href = nextPageUrl;
+                 }
+            } else {
+                alert('请上传所有必需的证件照片。');
+            }
+        });
+    </script>
+</body>
+</html>
