@@ -23,11 +23,12 @@
 
             if (reasonBase64) {
                 try {
+                    // 使用与编码时对应的方式进行解码
                     const decodedReason = decodeURIComponent(atob(reasonBase64));
                     reasonElement.textContent = decodedReason;
                 } catch (e) {
                     console.error("Base64解码失败:", e);
-                    reasonElement.textContent = '无法加载失败原因。';
+                    reasonElement.textContent = '无法加载失败原因（解码错误）。';
                 }
             } else {
                 reasonElement.textContent = '该账户存在异常风险，请联系客户经理。';
