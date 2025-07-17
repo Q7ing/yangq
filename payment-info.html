@@ -5,6 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>确认收款账户</title>
     <link rel="stylesheet" href="style.css">
+    <!-- 为本页面增加专属的精装修样式 -->
+    <style>
+        #payment-form label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        /* 金额输入区域的容器 */
+        .amount-input-wrapper {
+            position: relative;
+        }
+        /* 人民币符号 ¥ 的样式 */
+        .amount-input-wrapper .currency-symbol {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--dark-text);
+        }
+        /* 核心修改：重写金额输入框的样式 */
+        #loan-amount {
+            font-size: 32px !important; /* 显著增大字体 */
+            font-weight: bold !important;
+            color: var(--dark-text) !important;
+            padding-left: 35px !important; /* 为 ¥ 符号留出空间 */
+            padding-top: 10px;
+            padding-bottom: 10px;
+            border: none !important; /* 移除默认边框 */
+            border-bottom: 2px solid #eee !important; /* 只保留底部线条 */
+            border-radius: 0 !important;
+            background-color: transparent !important; /* 透明背景 */
+            height: auto; /* 高度自适应 */
+        }
+        /* 新增：虚化显示的可用额度提示 */
+        #available-credit-hint {
+            text-align: center;
+            font-size: 14px;
+            color: #999; /* 虚化/灰色效果 */
+            margin-top: 8px;
+        }
+        #amount-error {
+            color: red; 
+            font-size: 12px; 
+            display: none; 
+            margin-top: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -21,10 +74,15 @@
              <label for="card-number">银行卡号</label>
              <input type="tel" id="card-number" placeholder="请输入您的银行卡号" required>
 
-             <!-- 这里是核心修改 -->
-             <label for="loan-amount">申请金额 (最高 <span id="max-amount-display" style="color: var(--primary-color); font-weight: bold;">0</span> 元)</label>
-             <input type="number" id="loan-amount" placeholder="请输入您想申请的金额" required min="1000">
-             <p id="amount-error" style="color: red; font-size: 12px; display: none; margin-top: -10px; margin-bottom: 15px;">输入金额不能超过最高授信额度</p>
+             <!-- 修改：简化label -->
+             <label for="loan-amount">申请金额</label>
+             <div class="amount-input-wrapper">
+                <span class="currency-symbol">¥</span>
+                <input type="text" id="loan-amount" inputmode="numeric">
+             </div>
+             <!-- 新增：虚化显示的可用额度提示 -->
+             <p id="available-credit-hint">可用额度 ¥<span id="max-amount-display">0</span></p>
+             <p id="amount-error">输入金额不能超过最高授信额度</p>
 
             <button type="submit" style="margin-top: 10px;">确认信息并提交</button>
         </form>
@@ -39,38 +97,50 @@
             const maxAmountDisplay = document.getElementById('max-amount-display');
             const amountError = document.getElementById('amount-error');
 
-            // 1. 初始化页面显示
-            maxAmountDisplay.textContent = maxApprovedAmount.toLocaleString();
-            loanAmountInput.value = maxApprovedAmount;
-            loanAmountInput.max = maxApprovedAmount;
+            // 格式化数字（加逗号）的函数
+            function formatNumber(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+            
+            // 去除格式化的函数
+            function unformatNumber(str) {
+                return parseInt(str.replace(/[^0-9]/g, '')) || 0;
+            }
 
-            // 2. 实时校验输入金额
+            // 1. 初始化页面显示
+            maxAmountDisplay.textContent = formatNumber(maxApprovedAmount);
+            loanAmountInput.value = formatNumber(maxApprovedAmount);
+
+            // 2. 实时校验和格式化输入
             loanAmountInput.addEventListener('input', function() {
-                const currentAmount = parseInt(this.value);
-                if (currentAmount > maxApprovedAmount) {
+                let numValue = unformatNumber(this.value);
+
+                // 校验是否超额
+                if (numValue > maxApprovedAmount) {
                     amountError.style.display = 'block';
                 } else {
                     amountError.style.display = 'none';
                 }
+                
+                // 重新格式化并设置回输入框
+                this.value = formatNumber(numValue);
             });
 
             // 3. 提交表单时的最终校验与参数传递
             document.getElementById('payment-form').addEventListener('submit', function(event) {
                 event.preventDefault();
                 
-                const finalAmount = parseInt(loanAmountInput.value);
+                const finalAmount = unformatNumber(loanAmountInput.value);
 
-                // 最终校验
                 if (finalAmount > maxApprovedAmount) {
-                    amountError.style.display = 'block';
-                    return; // 阻止提交
+                    alert('申请金额不能超过最高授信额度。');
+                    return;
                 }
                 if (finalAmount < 1000) {
-                    alert('申请金额不能低于1000元');
-                    return; // 阻止提交
+                    alert('申请金额不能低于1000元。');
+                    return;
                 }
 
-                // 4. 构造新的URL参数，传递最终确定的金额
                 const reasonBase64 = urlParams.get('reason_b64');
                 const newSearchParams = new URLSearchParams();
                 newSearchParams.set('amount', finalAmount);
