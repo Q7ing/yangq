@@ -31,6 +31,7 @@
                 } else {
                     statusDetailElement.textContent = '审批完成，即将跳转至结果页...';
                     setTimeout(() => {
+                        // 关键修正：不再生成随机金额，而是直接把URL参数传递下去
                         window.location.href = 'result.html' + window.location.search;
                     }, 1500);
                 }
