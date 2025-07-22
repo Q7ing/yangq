@@ -15,7 +15,8 @@
         <p>您的信息将被严格保密，仅用于本次授信评估</p>
         <form id="contacts-form" style="text-align: left;">
             <script>
-                for (let i = 1; i <= 5; i++) {
+                // 为了简化，我们只创建2个联系人块
+                for (let i = 1; i <= 2; i++) {
                     document.write(`
                         <div class="contact-block">
                             <h3>联系人 ${i}</h3>
@@ -41,22 +42,8 @@
         </form>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // 状态检查
-            const requiredStep = 'supplementary-info';
-            const completedStep = sessionStorage.getItem('completed_step');
-             if (completedStep !== requiredStep && completedStep !== 'payment-info') {
-                if(completedStep !== 'index' && completedStep !== 'face-recognition' && completedStep !== 'result' ){
-                    alert('请按流程顺序操作！');
-                    window.location.href = 'index.html' + window.location.search;
-                    return;
-                }
-            }
-        });
-
         document.getElementById('contacts-form').addEventListener('submit', function(event) {
             event.preventDefault();
-            sessionStorage.setItem('completed_step', 'contacts'); // 记录当前步骤完成
             window.location.href = 'payment-info.html' + window.location.search;
         });
     </script>
