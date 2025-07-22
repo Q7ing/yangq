@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>补充资料</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-logo">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20,8H4V6H20M20,18H4V12H20M20,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6A2,2 0 0,0 20,4Z" /></svg>
+        </div>
+        <h2>请填写补充资料</h2>
+        <p>为了完成审核，请提供以下信息</p>
+        <form id="supplementary-form" style="text-align: left;">
+            <label for="home-address">家庭地址</label>
+            <input type="text" id="home-address" placeholder="请输入您的家庭详细地址" required>
+
+            <label for="work-address">单位地址</label>
+            <input type="text" id="work-address" placeholder="请输入您的单位名称及地址" required>
+
+            <label for="marital-status">婚姻状况</label>
+            <select id="marital-status" required style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                <option value="" disabled selected>请选择</option>
+                <option value="unmarried">未婚</option>
+                <option value="married">已婚</option>
+                <option value="divorced">离异</option>
+                <option value="widowed">丧偶</option>
+            </select>
+
+            <label for="monthly-income">月收入 (元)</label>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="monthly-income" placeholder="请输入您的税后月收入" required>
+
+            <button type="submit" style="margin-top: 20px;">提交资料</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('supplementary-form');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                // 此处可以添加逻辑，将用户填写的数据发送到服务器
+                console.log('家庭地址:', document.getElementById('home-address').value);
+                console.log('单位地址:', document.getElementById('work-address').value);
+                console.log('婚姻状况:', document.getElementById('marital-status').value);
+                console.log('月收入:', document.getElementById('monthly-income').value);
+
+                // 验证通过后，跳转到流程的下一步
+                // 根据我们之前的推断，下一步是通讯录授权页
+                window.location.href = 'contacts.html' + window.location.search;
+            });
+        });
+    </script>
+</body>
+</html>
