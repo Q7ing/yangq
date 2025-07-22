@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>氧气贷申请</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
+    <title>氧气贷申请</title> <link rel="stylesheet" href="style.css"> <style>
         /* 保持你原有的 style.css 样式 */
         /* 新增样式用于过期或无效提示 */
         #expired-overlay, #loading-overlay {
@@ -141,7 +139,7 @@
 
                     if (params.amount && params.reason) {
                         const reasonBase64 = window.btoa(unescape(encodeURIComponent(params.reason)));
-                        
+
                         searchParams.set('amount', params.amount);
                         searchParams.set('reason_b64', reasonBase64); 
                     }
