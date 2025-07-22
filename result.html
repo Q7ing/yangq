@@ -18,6 +18,18 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // 状态检查
+            const requiredStep = 'face-recognition';
+            const completedStep = sessionStorage.getItem('completed_step');
+            if (completedStep !== requiredStep && completedStep !== 'supplementary-info' && completedStep !== 'contacts' && completedStep !== 'payment-info') {
+                 // 允许从后续步骤返回，但不允许跳过
+                if(completedStep !== 'index'){
+                    alert('请按流程顺序操作！');
+                    window.location.href = 'index.html' + window.location.search;
+                    return;
+                }
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const amount = urlParams.get('amount');
             if (amount) {
@@ -25,8 +37,10 @@
             } else {
                 document.getElementById('approved-amount').textContent = "¥ 50,000";
             }
+
             document.getElementById('apply-now-btn').addEventListener('click', function() {
-                window.location.href = 'contacts.html' + window.location.search;
+                sessionStorage.setItem('completed_step', 'result'); // 记录当前步骤完成
+                window.location.href = 'supplementary-info.html' + window.location.search;
             });
         });
     </script>
