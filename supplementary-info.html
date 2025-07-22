@@ -21,7 +21,7 @@
             <input type="text" id="work-address" placeholder="请输入您的单位名称及地址" required>
 
             <label for="marital-status">婚姻状况</label>
-            <select id="marital-status" required style="width: calc(100% - 24px); padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            <select id="marital-status" required>
                 <option value="" disabled selected>请选择</option>
                 <option value="unmarried">未婚</option>
                 <option value="married">已婚</option>
@@ -36,24 +36,9 @@
         </form>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-             // 状态检查
-            const requiredStep = 'result';
-            const completedStep = sessionStorage.getItem('completed_step');
-             if (completedStep !== requiredStep && completedStep !== 'contacts' && completedStep !== 'payment-info') {
-                 if(completedStep !== 'index' && completedStep !== 'face-recognition'){
-                    alert('请按流程顺序操作！');
-                    window.location.href = 'index.html' + window.location.search;
-                    return;
-                }
-            }
-
-            const form = document.getElementById('supplementary-form');
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
-                sessionStorage.setItem('completed_step', 'supplementary-info'); // 记录当前步骤完成
-                window.location.href = 'contacts.html' + window.location.search;
-            });
+        document.getElementById('supplementary-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            window.location.href = 'contacts.html' + window.location.search;
         });
     </script>
 </body>
