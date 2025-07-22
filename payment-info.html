@@ -12,13 +12,12 @@
             margin-top: -10px;
             margin-bottom: 20px;
         }
-        /* [已修改] 将月还款的样式改为低调的普通文本样式 */
         .repayment-info {
             font-size: 16px;
-            font-weight: normal; /* 改为正常粗细 */
-            color: #333;        /* 改为正常的黑色 */
-            text-align: left;    /* 与其他标签左对齐 */
-            margin: 15px 0;      /* 保留垂直间距 */
+            font-weight: normal;
+            color: #333;
+            text-align: left;
+            margin: 15px 0;
         }
     </style>
 </head>
@@ -81,11 +80,17 @@
                     return;
                 }
 
-                const annualRate = Math.random() * (0.08 - 0.05) + 0.05;
-                const monthlyRate = annualRate / 12;
+                const annualRate = Math.random() * (0.08 - 0.06) + 0.06;
+                const initialMonthlyRate = annualRate / 12;
+                const monthlyRateAsPercent = initialMonthlyRate * 100;
+
+                // [已修改] 将该百分比四舍五入到小数点后两位
+                const roundedMonthlyPercent = Math.round(monthlyRateAsPercent * 100) / 100;
+
+                const finalMonthlyRate = roundedMonthlyPercent / 100;
 
                 const monthlyPrincipal = principal / term;
-                const monthlyInterest = principal * monthlyRate;
+                const monthlyInterest = principal * finalMonthlyRate;
 
                 const totalMonthlyPayment = monthlyPrincipal + monthlyInterest;
 
