@@ -83,15 +83,11 @@
                 const annualRate = Math.random() * (0.08 - 0.06) + 0.06;
                 const initialMonthlyRate = annualRate / 12;
                 const monthlyRateAsPercent = initialMonthlyRate * 100;
-
-                // [已修改] 将该百分比四舍五入到小数点后两位
                 const roundedMonthlyPercent = Math.round(monthlyRateAsPercent * 100) / 100;
-
                 const finalMonthlyRate = roundedMonthlyPercent / 100;
 
                 const monthlyPrincipal = principal / term;
                 const monthlyInterest = principal * finalMonthlyRate;
-
                 const totalMonthlyPayment = monthlyPrincipal + monthlyInterest;
 
                 repaymentDisplay.textContent = `月还款：¥ ${totalMonthlyPayment.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -117,7 +113,8 @@
                     return;
                 }
                 
-                window.location.href = 'final-processing.html' + window.location.search;
+                // [已修改] 跳转到新的补充资料页
+                window.location.href = 'supplementary-info.html' + window.location.search;
             });
         });
     </script>
