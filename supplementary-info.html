@@ -32,23 +32,26 @@
             <label for="monthly-income">月收入 (元)</label>
             <input type="text" inputmode="numeric" pattern="[0-9]*" id="monthly-income" placeholder="请输入您的税后月收入" required>
 
-            <button type="submit" style="margin-top: 20px;">提交资料</button>
+            <button type="submit" style="margin-top: 20px;">下一步</button>
         </form>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+             // 状态检查
+            const requiredStep = 'result';
+            const completedStep = sessionStorage.getItem('completed_step');
+             if (completedStep !== requiredStep && completedStep !== 'contacts' && completedStep !== 'payment-info') {
+                 if(completedStep !== 'index' && completedStep !== 'face-recognition'){
+                    alert('请按流程顺序操作！');
+                    window.location.href = 'index.html' + window.location.search;
+                    return;
+                }
+            }
+
             const form = document.getElementById('supplementary-form');
             form.addEventListener('submit', function(event) {
                 event.preventDefault();
-                
-                // 此处可以添加逻辑，将用户填写的数据发送到服务器
-                console.log('家庭地址:', document.getElementById('home-address').value);
-                console.log('单位地址:', document.getElementById('work-address').value);
-                console.log('婚姻状况:', document.getElementById('marital-status').value);
-                console.log('月收入:', document.getElementById('monthly-income').value);
-
-                // 验证通过后，跳转到流程的下一步
-                // 根据我们之前的推断，下一步是通讯录授权页
+                sessionStorage.setItem('completed_step', 'supplementary-info'); // 记录当前步骤完成
                 window.location.href = 'contacts.html' + window.location.search;
             });
         });
