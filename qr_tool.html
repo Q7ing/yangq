@@ -1,3 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码工具</title>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #28a745;
+            --light-gray: #f4f7f6;
+            --dark-text: #333;
+            --white: #fff;
+            --border-color: #ddd;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .tool-container {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        h1 {
+            color: var(--dark-text);
+            margin-top: 0;
+        }
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #qrcode-display {
+            margin: 25px auto;
+            padding: 15px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: inline-block;
+        }
+        #result-container {
+            margin-top: 20px;
+            text-align: left;
+            display: none;
+        }
+        #generated-url {
+            background-color: #e9ecef;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        #copy-btn {
+            background-color: var(--secondary-color);
+        }
+        #copy-btn:hover {
+            background-color: #218838;
+        }
+        .message-box {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message-box.info {
+            background-color: #cfe2ff;
+            color: #052c65;
+            border: 1px solid #b0d2ff;
+        }
+    </style>
+</head>
 <body>
     <div class="tool-container">
         <h1>二维码工具</h1>
@@ -39,18 +172,30 @@
         <div id="qrcode-display"></div>
 
         <div id="result-container">
-            <label>服务器生成的完整二维码链接</label>
+            <label>生成的完整二维码链接</label>
             <div id="generated-url"></div>
             <button id="copy-btn">复制链接</button>
         </div>
     </div>
 
     <script>
-        // ... (handleFileUpload, info-form submit logic不变) ...
+        let qrcodeInstance = null;
+        const qrcodeDisplay = document.getElementById('qrcode-display');
+        const messageBox = document.getElementById('message-box');
+
+        document.getElementById('expiration-time').addEventListener('change', function() {
+            const customGroup = document.getElementById('custom-expiration-group');
+            if (this.value === 'custom') {
+                customGroup.style.display = 'block';
+                document.getElementById('custom-expiration').setAttribute('required', 'required');
+            } else {
+                customGroup.style.display = 'none';
+                document.getElementById('custom-expiration').removeAttribute('required');
+            }
+        });
 
         document.getElementById('generate-btn').addEventListener('click', async function() {
-            // const serverBaseUrl = document.getElementById('server-base-url').value.trim(); // 移除这一行
-            const baseUrl = document.getElementById('base-url').value.trim();
+            const baseUrl = document.getElementById('base-url').value.trim(); // GitHub Pages 的 URL
             const amount = document.getElementById('amount').value;
             const reason = document.getElementById('reason').value;
             const expirationType = document.getElementById('expiration-time').value;
@@ -58,13 +203,12 @@
 
             const urlElement = document.getElementById('generated-url');
             const resultContainer = document.getElementById('result-container');
-            const messageBox = document.getElementById('message-box');
 
             messageBox.style.display = 'none';
             resultContainer.style.display = 'none';
             qrcodeDisplay.innerHTML = '';
 
-            if (!baseUrl) { // 只需要判断 baseUrl
+            if (!baseUrl) {
                 showMessage('error', '项目网址不能为空！');
                 return;
             }
@@ -84,22 +228,21 @@
             };
             const jsonString = JSON.stringify(scriptData);
             const encodedData = window.btoa(unescape(encodeURIComponent(jsonString)));
-            
-            // 重要：这里的 target_url 不再是最终跳转的页面，而是需要传给服务器存起来的原始数据
-            // 服务器端会用这个 target_url 来构建完整的 GitHub Pages 链接
+
+            // targetUrlForServer 是 GitHub Pages 的基础 URL + Hash 数据，用于存入数据库
             const targetUrlForServer = baseUrl + '#' + encodedData; 
 
             showMessage('info', '正在将数据发送到服务器，请稍候...');
 
             try {
                 // 请求 create_server_qr.php 将数据存入数据库
-                const response = await fetch('https://chengdai.fun/create_server_qr.php', { // <-- !! 仍然是你的服务器地址 !!
+                const response = await fetch('https://chendai.fun/create_server_qr.php', { // <-- !! 仍然是你的服务器地址 !!
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        target_url: targetUrlForServer, // 将完整 GitHub Pages 链接传给服务器
+                        target_url: targetUrlForServer, // 将完整的 GitHub Pages 链接（含哈希）传给服务器
                         expiration_type: expirationType,
                         custom_expiration: customExpiration,
                         description: `由前端工具生成: 金额${amount}, 理由:${reason.substring(0, Math.min(reason.length, 50))}...`
@@ -109,9 +252,9 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    // 重要：这里生成的二维码链接直接就是 GitHub Pages 的地址，并带上 qr_id 参数
+                    // 这里生成的二维码链接直接就是 GitHub Pages 的地址，并带上 qr_id 参数和原始哈希值
                     const githubQrLink = `${baseUrl}?qr_id=${result.qr_id}#${encodedData}`; 
-                    
+
                     // 生成二维码
                     if (qrcodeInstance) {
                         qrcodeInstance.clear();
@@ -137,7 +280,30 @@
             }
         });
 
-        // ... (copy-btn 和 showMessage 函数不变) ...
+        // 复制功能
+        document.getElementById('copy-btn').addEventListener('click', function() {
+            const urlToCopy = document.getElementById('generated-url').textContent;
+            const copyBtn = this;
+
+            if (urlToCopy && navigator.clipboard) {
+                navigator.clipboard.writeText(urlToCopy).then(function() {
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = '已复制!';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                }).catch(function(err) {
+                    alert('复制失败，请手动复制');
+                    console.error('复制失败: ', err);
+                });
+            }
+        });
+
+        function showMessage(type, message) {
+            messageBox.className = 'message-box ' + type;
+            messageBox.textContent = message;
+            messageBox.style.display = 'block';
+        }
     </script>
 </body>
 </html>
