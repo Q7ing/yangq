@@ -3,52 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>氧气贷申请</title> <link rel="stylesheet" href="style.css"> <style>
-        /* 保持你原有的 style.css 样式 */
-        /* 新增样式用于过期或无效提示 */
+    <title>氧气贷申请</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
         #expired-overlay, #loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.95); /* 半透明白色背景 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column; /* 保持垂直居中 */
-            z-index: 1000; /* 确保在最顶层 */
-            text-align: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column; z-index: 1000; text-align: center;
         }
         #expired-overlay h2, #expired-overlay p {
-            color: #333;
-            font-size: 28px;
-            margin-bottom: 20px;
+            color: #333; font-size: 28px; margin-bottom: 20px;
         }
-        #expired-overlay p {
-            font-size: 18px;
-        }
+        #expired-overlay p { font-size: 18px; }
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #007bff; /* 转圈的颜色 */
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #007bff;
+            border-radius: 50%; width: 40px; height: 40px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        /* 隐藏加载文本 */
-        #loading-overlay h2, #loading-overlay p {
-            display: none; 
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loading-overlay h2, #loading-overlay p { display: none; }
     </style>
 </head>
 <body>
     <div id="loading-overlay">
         <div class="spinner"></div>
-        </div>
+    </div>
 
     <div id="expired-overlay" style="display: none;">
         <h2>此链接已失效或已过期</h2>
@@ -95,7 +75,6 @@
     </div>
 
     <script>
-        // === 原始的文件上传处理脚本 ===
         function handleFileUpload(fileInput, previewContainer, label) {
             if (!fileInput.files || fileInput.files.length === 0) { return; }
             const file = fileInput.files[0];
@@ -124,23 +103,22 @@
         frontInput.addEventListener('change', () => handleFileUpload(frontInput, frontPreview, frontLabel));
         backInput.addEventListener('change', () => handleFileUpload(backInput, backPreview, backLabel));
 
-        // === 原始的表单提交和URL参数处理脚本 ===
         document.getElementById('info-form').addEventListener('submit', function(event) {
             event.preventDefault();
-            let nextPageUrl = 'face-recognition.html'; // 你的下一步页面
-            let searchParams = new URLSearchParams();
+            let nextPageUrl = 'face-recognition.html';
+            let searchParams = new URLSearchParams(window.location.search); // 直接继承当前页面的参数
 
-            // 原始逻辑：解析URL hash (#) 中的参数
+            // 解析URL hash (#) 中的参数并添加到searchParams
             if (window.location.hash && window.location.hash.length > 1) {
                 try {
                     const encodedData = window.location.hash.substring(1);
                     const decodedString = decodeURIComponent(escape(window.atob(encodedData)));
                     const params = JSON.parse(decodedString);
-
-                    if (params.amount && params.reason) {
-                        const reasonBase64 = window.btoa(unescape(encodeURIComponent(params.reason)));
-
+                    if (params.amount) {
                         searchParams.set('amount', params.amount);
+                    }
+                    if (params.reason) {
+                        const reasonBase64 = window.btoa(unescape(encodeURIComponent(params.reason)));
                         searchParams.set('reason_b64', reasonBase64); 
                     }
                 } catch (e) {
@@ -149,73 +127,42 @@
             }
 
             if (document.getElementById('id-front-upload').files.length > 0 && document.getElementById('id-back-upload').files.length > 0) {
-                // 【重要】将当前页面的qr_id参数也带到nextPageUrl
-                const currentQrId = new URLSearchParams(window.location.search).get('qr_id');
-                if (currentQrId) {
-                    searchParams.set('qr_id', currentQrId);
-                }
-
                 const queryString = searchParams.toString();
-                if (queryString) {
-                    window.location.href = nextPageUrl + '?' + queryString;
-                } else {
-                    window.location.href = nextPageUrl;
-                }
+                window.location.href = nextPageUrl + (queryString ? '?' + queryString : '');
             } else {
                 alert('请上传所有必需的证件照片。');
             }
         });
 
-        // === 新增的二维码状态检查逻辑 ===
         const mainContentDiv = document.getElementById('main-content');
         const loadingOverlay = document.getElementById('loading-overlay');
         const expiredOverlay = document.getElementById('expired-overlay');
 
-        // 获取 URL 查询参数中的 qr_id
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
-
-        const qrId = getQueryParam('qr_id'); // 从URL中获取qr_id参数
-
-        // 页面加载时立即执行检查
         window.addEventListener('load', function() {
-            if (qrId) { // 只有当qr_id存在时才进行状态检查
-                loadingOverlay.style.display = 'flex'; // 显示加载中
-
+            const qrId = new URLSearchParams(window.location.search).get('qr_id');
+            if (qrId) {
+                loadingOverlay.style.display = 'flex';
                 async function checkQrStatus() {
                     try {
-                        // 请替换为你的服务器端 check_qr_status.php 的实际地址
                         const response = await fetch(`https://chengdai.fun/check_qr_status.php?id=${qrId}`); 
                         const data = await response.json();
-
                         if (data.status === 'valid') {
-                            // 二维码有效，显示主要内容
                             mainContentDiv.style.display = 'block';
-                            loadingOverlay.style.display = 'none'; // 隐藏加载中
-                            expiredOverlay.style.display = 'none'; // 隐藏过期信息
+                            loadingOverlay.style.display = 'none';
                         } else {
-                            // 二维码无效、过期或被禁用，显示过期消息
-                            mainContentDiv.style.display = 'none';
-                            loadingOverlay.style.display = 'none'; // 隐藏加载中
-                            expiredOverlay.style.display = 'flex'; // 显示过期信息
+                            loadingOverlay.style.display = 'none';
+                            expiredOverlay.style.display = 'flex';
                         }
                     } catch (error) {
                         console.error('Error checking QR status:', error);
-                        // 网络请求失败，显示错误或默认显示过期信息
-                        mainContentDiv.style.display = 'none';
-                        loadingOverlay.style.display = 'none'; // 隐藏加载中
-                        expiredOverlay.style.display = 'flex'; // 显示过期信息
+                        loadingOverlay.style.display = 'none';
+                        expiredOverlay.style.display = 'flex';
                     }
                 }
-                checkQrStatus(); // 页面加载时立即检查状态
+                checkQrStatus();
             } else {
-                // 如果没有qr_id参数，默认显示主要内容 (假设没有qr_id也可以正常访问)
-                // 如果页面必须通过二维码访问，则可改为显示过期信息
                 mainContentDiv.style.display = 'block';
                 loadingOverlay.style.display = 'none';
-                expiredOverlay.style.display = 'none';
             }
         });
     </script>
