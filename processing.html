@@ -14,15 +14,6 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 【新增】状态检查：必须完成人脸识别才能进入本页面
-            const requiredStep = 'face-recognition';
-            const completedStep = sessionStorage.getItem('completed_step');
-            if (completedStep !== requiredStep) {
-                alert('请按流程顺序操作！');
-                window.location.href = 'index.html' + window.location.search;
-                return; // 阻止后续代码执行
-            }
-
             const statusDetailElement = document.getElementById('status-detail');
             const statuses = [
                 { text: '授信资料打包上传中...', duration: 3000 },
@@ -30,8 +21,8 @@
                 { text: '智能风控模型分析中...', duration: 7000 },
                 { text: '额度计算与资金匹配...', duration: 5000 }
             ];
-
             let currentIndex = 0;
+
             function updateStatus() {
                 if (currentIndex < statuses.length) {
                     const currentStatus = statuses[currentIndex];
@@ -41,8 +32,6 @@
                 } else {
                     statusDetailElement.textContent = '审批完成，即将跳转至结果页...';
                     setTimeout(() => {
-                        // 【修改】在跳转前，记录当前步骤已完成
-                        sessionStorage.setItem('completed_step', 'processing');
                         window.location.href = 'result.html' + window.location.search;
                     }, 1500);
                 }
