@@ -29,7 +29,7 @@
               <p id="amount-helper" class="helper-text"></p>
 
               <label for="loan-term">还款期数</label>
-              <select id="loan-term" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+              <select id="loan-term">
                   <option value="12">12 期</option>
                   <option value="24">24 期</option>
                   <option value="36" selected>36 期</option>
@@ -46,18 +46,6 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 状态检查
-            const requiredStep = 'contacts';
-            const completedStep = sessionStorage.getItem('completed_step');
-             if (completedStep !== requiredStep) {
-                 if(completedStep !== 'index' && completedStep !== 'face-recognition' && completedStep !== 'result' && completedStep !== 'supplementary-info'){
-                    alert('请按流程顺序操作！');
-                    window.location.href = 'index.html' + window.location.search;
-                    return;
-                 }
-            }
-
-            // ... 其余计算月还款的JS代码保持不变 ...
             const urlParams = new URLSearchParams(window.location.search);
             const maxAmountStr = urlParams.get('amount');
             const maxAmount = parseInt(maxAmountStr) || 50000;
@@ -65,8 +53,9 @@
             const amountHelper = document.getElementById('amount-helper');
             const loanTermSelect = document.getElementById('loan-term');
             const repaymentDisplay = document.getElementById('monthly-repayment-display');
-            loanAmountInput.value = maxAmount;  
+            loanAmountInput.value = maxAmount;
             amountHelper.textContent = `最高可申请额度为 ${maxAmount.toLocaleString()} 元`;
+
             function calculateAndUpdateRepayment() {
                 const principal = parseFloat(loanAmountInput.value) || 0;
                 const term = parseInt(loanTermSelect.value);
@@ -84,26 +73,22 @@
                 const totalMonthlyPayment = monthlyPrincipal + monthlyInterest;
                 repaymentDisplay.textContent = `月还款：¥ ${totalMonthlyPayment.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             }
+
             loanAmountInput.addEventListener('input', calculateAndUpdateRepayment);
             loanTermSelect.addEventListener('change', calculateAndUpdateRepayment);
             calculateAndUpdateRepayment();
 
             document.getElementById('payment-form').addEventListener('submit', function(event) {
                 event.preventDefault();
-                // ... 表单验证逻辑保持不变 ...
-                 const requestedAmount = parseInt(loanAmountInput.value);
-
+                const requestedAmount = parseInt(loanAmountInput.value);
                 if (isNaN(requestedAmount) || requestedAmount <= 0) {
                     alert('请输入有效的申请金额！');
                     return;
                 }
-
                 if (requestedAmount > maxAmount) {
                     alert(`申请金额不能超过您的最高可申请额度（${maxAmount.toLocaleString()}元）！`);
                     return;
                 }
-                
-                sessionStorage.setItem('completed_step', 'payment-info'); // 记录当前步骤完成
                 window.location.href = 'final-processing.html' + window.location.search;
             });
         });
