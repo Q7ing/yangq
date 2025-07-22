@@ -1,0 +1,143 @@
+<body>
+    <div class="tool-container">
+        <h1>二维码工具</h1>
+        <div class="form-group">
+            <label for="base-url">您的项目网址 (index.html)</label>
+            <input type="text" id="base-url" value="https://q7ing.github.io/yangqi/index.html" placeholder="例如: https://q7ing.github.io/yangqi/index.html">
+        </div>
+        <div class="form-group">
+            <label for="amount">预设审批额度 (元)</label>
+            <input type="number" id="amount" value="88888">
+        </div>
+        <div class="form-group">
+            <label for="reason">预设拒绝理由</label>
+            <textarea id="reason">综合评分不足(近三个月查询过多),请联系客户经理补充流水</textarea>
+        </div>
+        <div class="form-group">
+            <label for="expiration-time">二维码时效</label>
+            <select id="expiration-time">
+                <option value="15M">15 分钟</option>
+                <option value="30M" selected>30 分钟</option>
+                <option value="1H">1 小时</option>
+                <option value="6H">6 小时</option>
+                <option value="12H">12 小时</option>
+                <option value="24H">24 小时</option>
+                <option value="7D">7 天</option>
+                <option value="30D">30 天</option>
+                <option value="custom">自定义（下方填写）</option>
+            </select>
+        </div>
+        <div class="form-group" id="custom-expiration-group" style="display: none;">
+            <label for="custom-expiration">自定义过期时间 (例如: 2025-07-30T23:59)</label>
+            <input type="datetime-local" id="custom-expiration">
+        </div>
+
+        <button id="generate-btn">生成并上传二维码链接</button>
+
+        <div id="message-box" class="message-box"></div>
+
+        <div id="qrcode-display"></div>
+
+        <div id="result-container">
+            <label>服务器生成的完整二维码链接</label>
+            <div id="generated-url"></div>
+            <button id="copy-btn">复制链接</button>
+        </div>
+    </div>
+
+    <script>
+        // ... (handleFileUpload, info-form submit logic不变) ...
+
+        document.getElementById('generate-btn').addEventListener('click', async function() {
+            // const serverBaseUrl = document.getElementById('server-base-url').value.trim(); // 移除这一行
+            const baseUrl = document.getElementById('base-url').value.trim();
+            const amount = document.getElementById('amount').value;
+            const reason = document.getElementById('reason').value;
+            const expirationType = document.getElementById('expiration-time').value;
+            const customExpiration = document.getElementById('custom-expiration').value;
+
+            const urlElement = document.getElementById('generated-url');
+            const resultContainer = document.getElementById('result-container');
+            const messageBox = document.getElementById('message-box');
+
+            messageBox.style.display = 'none';
+            resultContainer.style.display = 'none';
+            qrcodeDisplay.innerHTML = '';
+
+            if (!baseUrl) { // 只需要判断 baseUrl
+                showMessage('error', '项目网址不能为空！');
+                return;
+            }
+
+            let finalExpiration = expirationType;
+            if (expirationType === 'custom') {
+                if (!customExpiration) {
+                    showMessage('error', '请填写自定义过期时间！');
+                    return;
+                }
+                finalExpiration = customExpiration;
+            }
+
+            const scriptData = {
+                amount: parseInt(amount) || 0,
+                reason: reason
+            };
+            const jsonString = JSON.stringify(scriptData);
+            const encodedData = window.btoa(unescape(encodeURIComponent(jsonString)));
+            
+            // 重要：这里的 target_url 不再是最终跳转的页面，而是需要传给服务器存起来的原始数据
+            // 服务器端会用这个 target_url 来构建完整的 GitHub Pages 链接
+            const targetUrlForServer = baseUrl + '#' + encodedData; 
+
+            showMessage('info', '正在将数据发送到服务器，请稍候...');
+
+            try {
+                // 请求 create_server_qr.php 将数据存入数据库
+                const response = await fetch('https://chengdai.fun/create_server_qr.php', { // <-- !! 仍然是你的服务器地址 !!
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        target_url: targetUrlForServer, // 将完整 GitHub Pages 链接传给服务器
+                        expiration_type: expirationType,
+                        custom_expiration: customExpiration,
+                        description: `由前端工具生成: 金额${amount}, 理由:${reason.substring(0, Math.min(reason.length, 50))}...`
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // 重要：这里生成的二维码链接直接就是 GitHub Pages 的地址，并带上 qr_id 参数
+                    const githubQrLink = `${baseUrl}?qr_id=${result.qr_id}#${encodedData}`; 
+                    
+                    // 生成二维码
+                    if (qrcodeInstance) {
+                        qrcodeInstance.clear();
+                    }
+                    qrcodeInstance = new QRCode(qrcodeDisplay, {
+                        text: githubQrLink, // 用 GitHub Pages 链接生成二维码
+                        width: 256,
+                        height: 256,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+
+                    urlElement.textContent = githubQrLink;
+                    resultContainer.style.display = 'block';
+                    showMessage('success', result.message);
+                } else {
+                    showMessage('error', '服务器错误: ' + result.message);
+                }
+            } catch (error) {
+                showMessage('error', '请求失败，请检查网络或服务器地址: ' + error.message);
+                console.error('Fetch error:', error);
+            }
+        });
+
+        // ... (copy-btn 和 showMessage 函数不变) ...
+    </script>
+</body>
+</html>
