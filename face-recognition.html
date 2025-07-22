@@ -14,20 +14,10 @@
         </div>
         <div class="instruction-view">
             <p id="instruction">请将面部置于圆框中</p>
-            <div id="timer"></div>
         </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 【新增】状态检查：必须完成基础信息才能进入本页面
-            const requiredStep = 'index';
-            const completedStep = sessionStorage.getItem('completed_step');
-            if (completedStep !== requiredStep) {
-                alert('请按流程顺序操作！');
-                window.location.href = 'index.html' + window.location.search;
-                return; // 阻止后续代码执行
-            }
-
             const video = document.getElementById('camera-feed');
             const instructionText = document.getElementById('instruction');
             
@@ -44,14 +34,8 @@
             function runTask(taskName) {
                 return new Promise(resolve => {
                     instructionText.textContent = taskName;
-                    let duration = Math.floor(Math.random() * 5) + 3; // 随机3-7秒
-                    const interval = setInterval(() => {
-                        duration--;
-                        if (duration <= 0) {
-                            clearInterval(interval);
-                            resolve();
-                        }
-                    }, 1000);
+                    let duration = Math.floor(Math.random() * 3) + 2; // 随机2-4秒
+                    setTimeout(resolve, duration * 1000);
                 });
             }
 
@@ -65,8 +49,6 @@
                 instructionText.textContent = "验证完成！";
                 
                 setTimeout(() => {
-                    // 【修改】在跳转前，记录当前步骤已完成
-                    sessionStorage.setItem('completed_step', 'face-recognition');
                     window.location.href = 'processing.html' + window.location.search;
                 }, 1500);
             }
