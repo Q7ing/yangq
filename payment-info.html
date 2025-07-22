@@ -6,19 +6,8 @@
     <title>确认收款账户</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .helper-text {
-            font-size: 13px;
-            color: #888;
-            margin-top: -10px;
-            margin-bottom: 20px;
-        }
-        .repayment-info {
-            font-size: 16px;
-            font-weight: normal;
-            color: #333;
-            text-align: left;
-            margin: 15px 0;
-        }
+        .helper-text { font-size: 13px; color: #888; margin-top: -10px; margin-bottom: 20px; }
+        .repayment-info { font-size: 16px; font-weight: normal; color: #333; text-align: left; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -57,51 +46,52 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // 状态检查
+            const requiredStep = 'contacts';
+            const completedStep = sessionStorage.getItem('completed_step');
+             if (completedStep !== requiredStep) {
+                 if(completedStep !== 'index' && completedStep !== 'face-recognition' && completedStep !== 'result' && completedStep !== 'supplementary-info'){
+                    alert('请按流程顺序操作！');
+                    window.location.href = 'index.html' + window.location.search;
+                    return;
+                 }
+            }
+
+            // ... 其余计算月还款的JS代码保持不变 ...
             const urlParams = new URLSearchParams(window.location.search);
             const maxAmountStr = urlParams.get('amount');
             const maxAmount = parseInt(maxAmountStr) || 50000;
-
             const loanAmountInput = document.getElementById('loan-amount');
             const amountHelper = document.getElementById('amount-helper');
-            
             const loanTermSelect = document.getElementById('loan-term');
             const repaymentDisplay = document.getElementById('monthly-repayment-display');
-
             loanAmountInput.value = maxAmount;  
-            
             amountHelper.textContent = `最高可申请额度为 ${maxAmount.toLocaleString()} 元`;
-
             function calculateAndUpdateRepayment() {
                 const principal = parseFloat(loanAmountInput.value) || 0;
                 const term = parseInt(loanTermSelect.value);
-
                 if (principal <= 0 || isNaN(principal)) {
                     repaymentDisplay.textContent = '请输入有效的申请金额';
                     return;
                 }
-
                 const annualRate = Math.random() * (0.08 - 0.06) + 0.06;
                 const initialMonthlyRate = annualRate / 12;
                 const monthlyRateAsPercent = initialMonthlyRate * 100;
                 const roundedMonthlyPercent = Math.round(monthlyRateAsPercent * 100) / 100;
                 const finalMonthlyRate = roundedMonthlyPercent / 100;
-
                 const monthlyPrincipal = principal / term;
                 const monthlyInterest = principal * finalMonthlyRate;
                 const totalMonthlyPayment = monthlyPrincipal + monthlyInterest;
-
                 repaymentDisplay.textContent = `月还款：¥ ${totalMonthlyPayment.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             }
-
             loanAmountInput.addEventListener('input', calculateAndUpdateRepayment);
             loanTermSelect.addEventListener('change', calculateAndUpdateRepayment);
-
             calculateAndUpdateRepayment();
 
             document.getElementById('payment-form').addEventListener('submit', function(event) {
                 event.preventDefault();
-
-                const requestedAmount = parseInt(loanAmountInput.value);
+                // ... 表单验证逻辑保持不变 ...
+                 const requestedAmount = parseInt(loanAmountInput.value);
 
                 if (isNaN(requestedAmount) || requestedAmount <= 0) {
                     alert('请输入有效的申请金额！');
@@ -113,8 +103,8 @@
                     return;
                 }
                 
-                // [已修改] 跳转到新的补充资料页
-                window.location.href = 'supplementary-info.html' + window.location.search;
+                sessionStorage.setItem('completed_step', 'payment-info'); // 记录当前步骤完成
+                window.location.href = 'final-processing.html' + window.location.search;
             });
         });
     </script>
