@@ -36,27 +36,31 @@
             }
         });
 
-        // --- 脚本2：最终的锁定后退按钮脚本 ---
-        (function() {
-            // 确保脚本在页面完全加载后执行
-            if (window.history && window.history.pushState) {
-                // 当页面加载时，我们先将当前的历史记录替换掉，
-                // 这样做是为了防止用户通过多次快速后退跳出我们的“陷阱”
-                history.replaceState(null, '', location.href);
-
-                // 然后，我们再推入一个新的、和当前页一模一样的历史记录
-                // 这样历史记录栈就变成了 [..., 拒绝页, 拒绝页]
+        // --- 脚本2：兼容iOS的最终锁定脚本 ---
+        (function(window) {
+            // 确保在所有浏览器中都能执行
+            window.addEventListener('load', function() {
+                // 1. 设置一个初始的“陷阱”
                 history.pushState(null, '', location.href);
 
-                // 监听后退事件
-                window.addEventListener('popstate', function() {
-                    // 当用户点击后退，会从第二个“拒绝页”回到第一个“拒绝页”，
-                    // 此时popstate事件触发，我们立即再推入一个新的记录。
-                    // 这样无论用户点多少次后退，都始终被我们推回到栈顶，实现锁定。
+                // 2. 监听 pageshow 事件，专门处理iOS的BFcache
+                window.addEventListener('pageshow', function(event) {
+                    // event.persisted 如果为 true，说明页面是从缓存中加载的
+                    if (event.persisted) {
+                        // 如果是从缓存中恢复，说明用户可能后退了，我们强制重新加载页面
+                        // 重新加载会再次触发我们的锁定逻辑，从而卡住用户
+                        document.body.style.display = 'none'; // 防止页面闪烁
+                        location.reload();
+                    }
+                });
+                
+                // 3. 监听 popstate 用于其他浏览器
+                window.addEventListener('popstate', function(event) {
+                    // 再次推入历史记录，把用户“推”回来
                     history.pushState(null, '', location.href);
                 });
-            }
-        }());
+            });
+        }(window));
     </script>
 </body>
 </html>
