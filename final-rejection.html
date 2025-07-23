@@ -15,7 +15,9 @@
         <h2 style="margin-top: 30px; color: #dc3545;">申请失败</h2>
         <p id="rejection-reason" style="font-size: 16px; color: #666; max-width: 280px; margin: 15px auto;"></p>
     </div>
+
     <script>
+        // --- 脚本1：显示拒绝原因 ---
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const reasonBase64 = urlParams.get('reason_b64');
@@ -34,15 +36,26 @@
             }
         });
 
-        // 【新增的锁定脚本】
-        // 页面加载完成后，立即在历史记录中再压入一个当前页
-        history.pushState(null, '', location.href);
-        
-        // 监听后退事件
-        window.addEventListener('popstate', function(event) {
-            // 当用户点击后退时，再次将当前页压入历史记录，实现停留在当前页的效果
-            history.pushState(null, '', location.href);
-        });
+        // --- 脚本2：锁定后退按钮的独立脚本 ---
+        (function(window, location, history) {
+            // 使用setTimeout确保在主线程空闲时执行，防止页面加载竞争
+            setTimeout(function() {
+                // 页面加载时，用一个明确的状态替换当前历史记录，作为我们的“锚点”
+                history.replaceState({ page: 'final' }, '', location.href);
+
+                // 在“锚点”之上，推入一个新的、无状态的记录，制造一个“陷阱”
+                history.pushState(null, '', location.href);
+            }, 0);
+            
+            // 监听popstate事件（用户点击后退/前进）
+            window.addEventListener('popstate', function() {
+                // 检查当前状态是否是我们的“锚点”
+                if (history.state && history.state.page === 'final') {
+                    // 如果是，说明用户正试图离开，我们再次推入“陷阱”，把他卡住
+                    history.pushState(null, '', location.href);
+                }
+            }, false);
+        }(window, window.location, window.history));
     </script>
 </body>
 </html>
