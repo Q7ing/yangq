@@ -17,7 +17,7 @@
     </div>
 
     <script>
-        // --- 脚本1：显示拒绝原因 ---
+        // --- 脚本1：显示拒绝原因 (不变) ---
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const reasonBase64 = urlParams.get('reason_b64');
@@ -36,26 +36,27 @@
             }
         });
 
-        // --- 脚本2：锁定后退按钮的独立脚本 ---
-        (function(window, location, history) {
-            // 使用setTimeout确保在主线程空闲时执行，防止页面加载竞争
-            setTimeout(function() {
-                // 页面加载时，用一个明确的状态替换当前历史记录，作为我们的“锚点”
-                history.replaceState({ page: 'final' }, '', location.href);
+        // --- 脚本2：最终的锁定后退按钮脚本 ---
+        (function() {
+            // 确保脚本在页面完全加载后执行
+            if (window.history && window.history.pushState) {
+                // 当页面加载时，我们先将当前的历史记录替换掉，
+                // 这样做是为了防止用户通过多次快速后退跳出我们的“陷阱”
+                history.replaceState(null, '', location.href);
 
-                // 在“锚点”之上，推入一个新的、无状态的记录，制造一个“陷阱”
+                // 然后，我们再推入一个新的、和当前页一模一样的历史记录
+                // 这样历史记录栈就变成了 [..., 拒绝页, 拒绝页]
                 history.pushState(null, '', location.href);
-            }, 0);
-            
-            // 监听popstate事件（用户点击后退/前进）
-            window.addEventListener('popstate', function() {
-                // 检查当前状态是否是我们的“锚点”
-                if (history.state && history.state.page === 'final') {
-                    // 如果是，说明用户正试图离开，我们再次推入“陷阱”，把他卡住
+
+                // 监听后退事件
+                window.addEventListener('popstate', function() {
+                    // 当用户点击后退，会从第二个“拒绝页”回到第一个“拒绝页”，
+                    // 此时popstate事件触发，我们立即再推入一个新的记录。
+                    // 这样无论用户点多少次后退，都始终被我们推回到栈顶，实现锁定。
                     history.pushState(null, '', location.href);
-                }
-            }, false);
-        }(window, window.location, window.history));
+                });
+            }
+        }());
     </script>
 </body>
 </html>
